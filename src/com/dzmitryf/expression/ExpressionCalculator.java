@@ -27,7 +27,7 @@ public class ExpressionCalculator {
 
 		stepsCalculation.clear();
 		expression = addGroupBrackets(expression.replace(" ", "").trim());
-		return eval(expression);
+		return calculate(expression);
 	}	
 
 	private boolean isValid(String expression) {
@@ -42,7 +42,7 @@ public class ExpressionCalculator {
 		return !(hasNotExpressionSymbols || hasInvalidSyntaxOperators) && countBracketsEquals;
 	}
 
-	private int eval(String expression) {
+	private int calculate(String expression) {
 
 		if (isDigit(expression)) {
 			return Integer.valueOf(expression);
@@ -54,10 +54,10 @@ public class ExpressionCalculator {
 			String[] operandsExpression = getOperandsInBrackets(expression);
 
 			if (operandsExpression.length > 1) {
-				int valueInBrackets = eval(getOperandWithoutBrackets(operandsExpression[1]));
+				int valueInBrackets = calculate(getOperandWithoutBrackets(operandsExpression[1]));
 				operandsExpression[1] = String.valueOf(valueInBrackets);
 				String newOperandsExpression = addGroupBrackets(String.join("", operandsExpression));
-				return eval(newOperandsExpression);
+				return calculate(newOperandsExpression);
 			} else {
 				operandsExpression = getSimpleOperands(expression);
 			}
@@ -91,15 +91,15 @@ public class ExpressionCalculator {
 				if (isOperand(expressionInBreackets)) {
 					lastOperand = expressionInBreackets;
 				} else {
-					operandsExpression[indexOperand] = String.valueOf(eval(expressionInBreackets));
+					operandsExpression[indexOperand] = String.valueOf(calculate(expressionInBreackets));
 					stepsCalculation.add(operandsExpression[indexOperand]);
 				}
 			} else {
 
 				if (indexOperand == 0) {
-					leftOperandValue = eval(expressionInBreackets);
+					leftOperandValue = calculate(expressionInBreackets);
 				} else {
-					rightOperandValue = eval(expressionInBreackets);
+					rightOperandValue = calculate(expressionInBreackets);
 				}
 
 				if (isOperand(lastOperand)) {
