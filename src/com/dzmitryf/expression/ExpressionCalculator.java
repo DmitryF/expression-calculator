@@ -9,6 +9,22 @@ public class ExpressionCalculator {
 
 	private static final String SEPARATOR = ";";
 	
+	private static final String SIMPLE_OPERANDS = "[[+]|[-]|[*]|[/]]{1}";
+	
+	private static final String LEFT_BRACKET = "[(]";
+	
+	private static final String RIGHT_BRACKET = "[)]";
+	
+	private static final String BRACKETS = LEFT_BRACKET + "|" + RIGHT_BRACKET;
+	
+	private static final String OPERANDS_IN_BRACKETS = "[(]{1}([0-9]{1,}([+]|[-]|[*]|[/])*){1,}[0-9]{1,}[)]{1}";
+	
+	private static final String GROUP_OPERANDS_WITH_DIV_MUL = "([0-9]{1,}([/]|[*])[0-9]{1,})";
+	
+	private static final String NOT_EXPRESSION_SYMBOLS = "[^\\+|\\-|\\*|\\/|\\(|\\)|0-9]";
+	
+	private static final String INVALID_SYNTAX_OPERATORS = "[\\+|\\-|\\*|\\/]{2,}|([(][)])|([0-9][(])|([)][0-9])";
+	
 	private List<String> stepsCalculation = new ArrayList<>();
 
 	public ExpressionCalculator() {
@@ -32,18 +48,18 @@ public class ExpressionCalculator {
 
 	private boolean isValid(String expression) {
 
-		boolean hasNotExpressionSymbols = Pattern.compile("[^\\+|\\-|\\*|\\/|\\(|\\)|0-9]").matcher(expression).find();
-		boolean hasInvalidSyntaxOperators = Pattern.compile("[\\+|\\-|\\*|\\/]{2,}|([(][)])|([0-9][(])|([)][0-9])")
+		boolean hasNotExpressionSymbols = Pattern.compile(NOT_EXPRESSION_SYMBOLS).matcher(expression).find();
+		boolean hasInvalidSyntaxOperators = Pattern.compile(INVALID_SYNTAX_OPERATORS)
 				.matcher(expression).find();
-		int countLeftBrackets = expression.split("[(]").length;
-		int countRightBrackets = expression.split("[)]").length;
+		int countLeftBrackets = expression.split(LEFT_BRACKET).length;
+		int countRightBrackets = expression.split(RIGHT_BRACKET).length;
 		boolean countBracketsEquals = countLeftBrackets == countRightBrackets;
 
 		return !(hasNotExpressionSymbols || hasInvalidSyntaxOperators) && countBracketsEquals;
 	}
 
 	private int calculate(String expression) {
-
+		
 		if (isDigit(expression)) {
 			return Integer.valueOf(expression);
 		} else {
@@ -71,12 +87,12 @@ public class ExpressionCalculator {
 	}
 
 	private String[] getSimpleOperands(String expression) {
-		return expression.replaceAll("[[+]|[-]|[*]|[/]]{1}", SEPARATOR + "$0" + SEPARATOR).split(SEPARATOR);
+		return expression.replaceAll(SIMPLE_OPERANDS, SEPARATOR + "$0" + SEPARATOR).split(SEPARATOR);
 	}
 
 	private String[] getOperandsInBrackets(String expression) {
 		return expression
-				.replaceFirst("[(]{1}([0-9]{1,}([+]|[-]|[*]|[/])*){1,}[0-9]{1,}[)]{1}", SEPARATOR + "$0" + SEPARATOR)
+				.replaceFirst(OPERANDS_IN_BRACKETS, SEPARATOR + "$0" + SEPARATOR)
 				.split(SEPARATOR);
 	}
 
@@ -95,7 +111,6 @@ public class ExpressionCalculator {
 					stepsCalculation.add(operandsExpression[indexOperand]);
 				}
 			} else {
-
 				if (indexOperand == 0) {
 					leftOperandValue = calculate(expressionInBreackets);
 				} else {
@@ -128,18 +143,17 @@ public class ExpressionCalculator {
 	}
 
 	private String getOperandWithoutBrackets(String expression) {
-		return expression.replaceAll("[(]|[)]", "");
+		return expression.replaceAll(BRACKETS, "");
 	}
 
-	private String addGroupBrackets(String expression) {
-		String groupOperandsWithDivMul = "([0-9]{1,}([/]|[*])[0-9]{1,})";
-		String expressionWithBrackets = expression.replaceAll(groupOperandsWithDivMul, "(" + "$0" + ")");
+	private String addGroupBrackets(String expression) {		
+		String expressionWithBrackets = expression.replaceAll(GROUP_OPERANDS_WITH_DIV_MUL, "(" + "$0" + ")");
 		stepsCalculation.add(expressionWithBrackets);
 		return expressionWithBrackets;
 	}
 
 	private boolean isOperand(String value) {
-		return value != null && (value.equals("+") || value.equals("-") || value.equals("*") || value.equals("/"));
+		return value != null && value.length() == 1 && Pattern.compile(SIMPLE_OPERANDS).matcher(value).find();
 	}
 
 	private boolean isDigit(String value) {
